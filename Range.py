@@ -163,6 +163,7 @@ class Range:
             pass
 
     def new_game(self):
+
         pass
 
 
