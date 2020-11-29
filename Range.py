@@ -6,6 +6,7 @@ import time
 from _collections import deque
 from copy import deepcopy
 
+
 # pycosat package can only run with python 3.7 interpreter under my local environment
 
 
@@ -18,56 +19,102 @@ class ClueCell:
 
     def search_left(self):
         row, col = self.position
+        direction = ['col', -1]
         if col == 0:
             # on the edge, nothing on the left
             return 0
         count = 0
         while True:
-            col -= 1
+            if direction[0] == 'col':
+                col += direction[1]
+            else:
+                row += direction[1]
+
             if not 0 <= row < len(self.board) or not 0 <= col < len(self.board[0]):
+                # out of the board
                 break
+
+            # Meet a mirror? Change the direction!
+            if self.board[row][col] == "/":
+                direction = ['row', 1]
+            if self.board[row][col] == "\\":
+                direction = ['row', -1]
+
             self.left.append((row, col))
             count += 1
         return count
 
     def search_right(self):
         row, col = self.position
+        direction = ['col', 1]
         if col == len(self.board[0]) - 1:
             # on the edge, nothing on the right
             return 0
         count = 0
         while True:
-            col += 1
+            if direction[0] == 'col':
+                col += direction[1]
+            else:
+                row += direction[1]
+
             if not 0 <= row < len(self.board) or not 0 <= col < len(self.board[0]):
                 break
+
+            if self.board[row][col] == "/":
+                direction = ['row', -1]
+            if self.board[row][col] == "\\":
+                direction = ['row', 1]
+
             self.right.append((row, col))
             count += 1
         return count
 
     def search_up(self):
         row, col = self.position
+        direction = ['row', -1]
         if row == 0:
             # on the edge, nothing on the up side
             return 0
         count = 0
         while True:
-            row -= 1
+            if direction[0] == 'col':
+                col += direction[1]
+            else:
+                row += direction[1]
+
             if not 0 <= row < len(self.board) or not 0 <= col < len(self.board[0]):
                 break
+
+            if self.board[row][col] == "/":
+                direction = ['col', 1]
+            if self.board[row][col] == "\\":
+                direction = ['col', -1]
+
             self.up.append((row, col))
             count += 1
         return count
 
     def search_down(self):
         row, col = self.position
+        direction = ['row', 1]
         if row == len(self.board) - 1:
             # on the edge, nothing on the left
             return 0
         count = 0
         while True:
-            row += 1
+            if direction[0] == 'col':
+                col += direction[1]
+            else:
+                row += direction[1]
+
             if not 0 <= row < len(self.board) or not 0 <= col < len(self.board[0]):
                 break
+
+            if self.board[row][col] == "/":
+                direction = ['col', -1]
+            if self.board[row][col] == "\\":
+                direction = ['col', 1]
+
             self.down.append((row, col))
             count += 1
         return count
@@ -144,9 +191,7 @@ class Range:
     def __init__(self, width=3, height=3):
         self.width, self.height = width, height
         self.board = [[' '] * width for _ in range(height)]
-        self.clues = []
-        self.candidate = []
-        self.cnf = []
+        self.clues, self.candidate, self.cnf = [], [], []
 
     def read_clue(self, board):
         self.board = board
@@ -237,10 +282,10 @@ class Range:
         all_coords = list(product(range(self.height), range(self.width)))
 
         for coord in all_coords:
-            # assign a "White" or "Black Box" value to each cell
+            # Assign a "White" or "Black Box" value to each cell
             self.cnf += one_of(comb(coord, value) for value in values)
 
-            # TODO: No two black squares are orthogonally adjacent.
+            # Rule: No two black squares are orthogonally adjacent.
             neighbor_coord = self.find_adjacency(coord)
             neighbor_dnf = [comb(coord, 'B')]
             for p in neighbor_coord:
@@ -276,7 +321,7 @@ class Range:
                     ans[row][col] = 'B'
 
             if self.check_connectivity(box_list):
-                # Verify the connectivity of white cells
+                # Rule: Verify the connectivity of all of the white cells
                 return ans
 
     def new_game(self):
@@ -284,23 +329,23 @@ class Range:
 
 
 if __name__ == '__main__':
+
     r = Range()
-    r.read_clue([['4', ' ', '4', ' '],
-                 [' ', '4', ' ', ' '],
+    r.read_clue([['2', '/', '6', ' '],
+                 [' ', '6', ' ', ' '],
                  [' ', ' ', '5', ' '],
-                 [' ', '6', ' ', '6']])
+                 [' ', '8', ' ', '6']])
 
     start = time.process_time()
     solution = r.solve_range()
     end = time.process_time()
     for line in solution:
         print(line)
-    print('Solved in {} seconds'.format(end - start))
+    print('Solved in {} seconds\n'.format(end - start))
 
-    """
     r = Range()
-    r.read_clue([[' ', '9', ' ', ' ', ' ', ' '],
-                 ['5', ' ', ' ', '3', ' ', ' '],
+    r.read_clue([[' ', '7', ' ', ' ', ' ', ' '],
+                 ['7', '\\', ' ', '3', ' ', ' '],
                  [' ', ' ', '3', ' ', ' ', '2'],
                  [' ', ' ', ' ', ' ', '5', ' ']])
 
@@ -309,8 +354,10 @@ if __name__ == '__main__':
     end = time.process_time()
     for line in solution:
         print(line)
-    print('Solved in {} seconds'.format(end - start))
+    print('Solved in {} seconds\n'.format(end - start))
 
+    """
+    # 6*6 Slow!
     r = Range()
     r.read_clue([['3', ' ', ' ', ' ', ' ', ' '],
                  [' ', ' ', ' ', '8', ' ', ' '],
