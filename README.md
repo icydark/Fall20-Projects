@@ -1,7 +1,8 @@
 # Fall20-Projects
-Student final projects from the Fall 2020 semester
+## Range with Mirror
+Final projects from the Fall 2020 semester
 
-Each project from this semester is a public fork linked from this repository.  This is just one of the many assignments students worked on for the course, but this is the *only* one they are permitted to publish openly.
+Xinyu Huang - xinyuh10
 
 ## Final Project Expectations:
 
