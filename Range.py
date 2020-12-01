@@ -3,6 +3,7 @@ from sat_utils import solve_one, from_dnf, one_of, solve_all
 from sys import intern
 from itertools import product
 import time
+from random import randrange, choice
 from _collections import deque
 from copy import deepcopy
 
@@ -34,6 +35,10 @@ class ClueCell:
                 # out of the board
                 break
 
+            if self.board[row][col] == "B":
+                # meet a black box, condition for generator
+                break
+
             # Meet a mirror? Change the direction!
             if self.board[row][col] == "/":
                 direction = ['row', 1]
@@ -58,6 +63,10 @@ class ClueCell:
                 row += direction[1]
 
             if not 0 <= row < len(self.board) or not 0 <= col < len(self.board[0]):
+                break
+
+            if self.board[row][col] == "B":
+                # meet a black box, condition for generator
                 break
 
             if self.board[row][col] == "/":
@@ -85,6 +94,10 @@ class ClueCell:
             if not 0 <= row < len(self.board) or not 0 <= col < len(self.board[0]):
                 break
 
+            if self.board[row][col] == "B":
+                # meet a black box, condition for generator
+                break
+
             if self.board[row][col] == "/":
                 direction = ['col', 1]
             if self.board[row][col] == "\\":
@@ -110,6 +123,10 @@ class ClueCell:
             if not 0 <= row < len(self.board) or not 0 <= col < len(self.board[0]):
                 break
 
+            if self.board[row][col] == "B":
+                # meet a black box, condition for generator
+                break
+
             if self.board[row][col] == "/":
                 direction = ['col', -1]
             if self.board[row][col] == "\\":
@@ -120,13 +137,17 @@ class ClueCell:
         return count
 
     def search_candidates(self):
+        """
+        Big-O: O((w*h)^2)
+        when the clue is in the middle =>  (w/2)*(h/2)*(w/2)*(h/2)
+        """
         l_count = self.search_left()
         r_count = self.search_right()
         u_count = self.search_up()
         d_count = self.search_down()
 
         # TODO: Here is a naive method to find out the permutation of black boxes for each numbered cell
-        #       Might exist a more advanced algorithm
+        #       Might exist a more advanced algorithm  (Although this part will not increase the runtime significantly)
         for i in range(l_count + 1):
             if self.left and i < len(self.left):
                 row, col = self.left[i]
@@ -188,10 +209,11 @@ class ClueCell:
 
 
 class Range:
-    def __init__(self, width=3, height=3):
+    def __init__(self, width=5, height=4):
         self.width, self.height = width, height
-        self.board = [[' '] * width for _ in range(height)]
+        self.board = [[]]  # record the clues for the solver
         self.clues, self.candidate, self.cnf = [], [], []
+        self.puzzle = [[' '] * width for _ in range(height)]  # an empty board, claimed for the generator
 
     def read_clue(self, board):
         self.board = board
@@ -231,14 +253,17 @@ class Range:
             else:
                 return [(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)]
 
-    def check_connectivity(self, black_boxes: list):
+    def check_connectivity(self, black_boxes: list) -> bool:
         """
         Label the white cells as 2 and black boxes as 0; scan the answer board twice,
         In the first scan , start a bfs when reach the first white cell, convert all the connect cells to 1, then stop
         scanning.
         In the second scan, find out is there any 2s left, if not, valid answer, else, invalid answer
+
+        Big-O: O(w*h)
+
         :param black_boxes: the cells to put black boxes
-        :return:
+        :return: True if all white cells are connected, False if blocked by black box
         """
 
         label_board = [[2] * self.width for _ in range(self.height)]
@@ -308,9 +333,12 @@ class Range:
                         temp.append(comb(cell, 'W'))
 
                 p_dnf.append(temp)
+
+            # TODO: This from_dnf is so slow, maybe need some optimization
             self.cnf += from_dnf(p_dnf)
 
         possible_solution = solve_all(self.cnf)
+        res = []
         for solution_facts in possible_solution:
             ans = deepcopy(self.board)
             box_list = []
@@ -322,14 +350,130 @@ class Range:
 
             if self.check_connectivity(box_list):
                 # Rule: Verify the connectivity of all of the white cells
-                return ans
+                res.append(deepcopy(ans))
+
+        return res
 
     def new_game(self):
-        pass
+        all_coords = list(product(range(self.height), range(self.width)))
+
+        # randomly placing black boxes on the empty board, seems a reasonable number is less than 1/4 of total cell
+        box_num = self.width * self.height // 4
+        box_list = []
+        for i in range(box_num):
+            # randomly choose one coordinate
+            candidate_index = randrange(len(all_coords))
+            x, y = all_coords[candidate_index]
+
+            # no adjacent black boxes
+            neighbors = self.find_adjacency((x, y))
+            nei_flag = False
+            for nei in neighbors:
+                if self.puzzle[nei[0]][nei[1]] == 'B':
+                    nei_flag = True
+                    break
+            if nei_flag:
+                continue
+
+            # all white cells should be connected
+            box_list.append((x, y))
+            if self.check_connectivity(box_list):
+                self.puzzle[x][y] = 'B'
+                all_coords.pop(candidate_index)
+            else:
+                box_list.pop()
+
+        # placing mirrors
+        mirror_num = randrange(len(box_list)) // 2
+        if not mirror_num:
+            mirror_num += 2
+        for i in range(mirror_num):
+            # randomly choose one coordinate
+            candidate_index = randrange(len(all_coords))
+            x, y = all_coords[candidate_index]
+            all_coords.pop(candidate_index)
+
+            self.puzzle[x][y] = choice(['\\', '/'])
+
+        # placing numbered cells (clues)
+        clue_num = self.width * self.height // 4 - 1
+        for i in range(clue_num):
+            # randomly choose one coordinate
+            candidate_index = randrange(len(all_coords))
+            x, y = all_coords[candidate_index]
+            all_coords.pop(candidate_index)
+
+            new_clue = ClueCell((x, y), 1, self.puzzle)
+            new_clue.value += new_clue.search_left()
+            new_clue.value += new_clue.search_right()
+            new_clue.value += new_clue.search_up()
+            new_clue.value += new_clue.search_down()
+            self.puzzle[x][y] = str(new_clue.value)
+
+        # only one solution?
+        while True:
+            test_board = deepcopy(self.puzzle)
+            for coord in box_list:
+                test_board[coord[0]][coord[1]] = ' '
+            self.read_clue(test_board)
+            if len(self.solve_range()) == 1:
+                break
+
+            candidate_index = randrange(len(all_coords))
+            x, y = all_coords[candidate_index]
+            all_coords.pop(candidate_index)
+
+            new_clue = ClueCell((x, y), 1, self.puzzle)
+            new_clue.value += new_clue.search_left()
+            new_clue.value += new_clue.search_right()
+            new_clue.value += new_clue.search_up()
+            new_clue.value += new_clue.search_down()
+            self.puzzle[x][y] = str(new_clue.value)
+
+        return test_board
 
 
 if __name__ == '__main__':
+    while True:
+        print("Please enter the game size, enter q to quit.")
 
+        h = input('Height (default 4): ')
+        if h == 'q':
+            break
+        if not h.isdigit():
+            if not h:
+                h = 4
+            else:
+                print('Invalid input!')
+                continue
+
+        w = input('Width (default 4): ')
+        if not w.isdigit():
+            if not w:
+                w = 4
+            else:
+                print('Invalid input!')
+                continue
+
+        h, w = int(h), int(w)
+
+        r = Range(w, h)
+        print('Generating Puzzle...')
+        new_puzzle = r.new_game()
+        for line in new_puzzle:
+            print('|' + '|'.join(line) + '|')
+
+        a = input('Enter q to quit, enter any other key to see the solution: ')
+        if a == 'q':
+            break
+
+        print('\nSolution:')
+        for line in r.puzzle:
+            print('|' + '|'.join(line) + '|')
+
+        print('\nDid you solve it correctly?')
+        break
+"""
     r = Range()
     r.read_clue([['2', '/', '6', ' '],
                  [' ', '6', ' ', ' '],
@@ -337,11 +481,11 @@ if __name__ == '__main__':
                  [' ', '8', ' ', '6']])
 
     start = time.process_time()
-    solution = r.solve_range()
+    solution = r.solve_range()[0]
     end = time.process_time()
     for line in solution:
-        print(line)
-    print('Solved in {} seconds\n'.format(end - start))
+        print('|' + '|'.join(line) + '|')
+    print('Solved in {}s.\n'.format(end - start))
 
     r = Range()
     r.read_clue([[' ', '7', ' ', ' ', ' ', ' '],
@@ -350,13 +494,13 @@ if __name__ == '__main__':
                  [' ', ' ', ' ', ' ', '5', ' ']])
 
     start = time.process_time()
-    solution = r.solve_range()
+    solution = r.solve_range()[0]
     end = time.process_time()
     for line in solution:
-        print(line)
-    print('Solved in {} seconds\n'.format(end - start))
+        print('|' + '|'.join(line) + '|')
+    print('Solved in {}s.\n'.format(end - start))
 
-    """
+
     # 6*6 Slow!
     r = Range()
     r.read_clue([['3', ' ', ' ', ' ', ' ', ' '],
@@ -367,9 +511,9 @@ if __name__ == '__main__':
                  [' ', ' ', ' ', ' ', ' ', '7']])
 
     start = time.process_time()
-    solution = r.solve_range()
+    solution = r.solve_range()[0]
     end = time.process_time()
     for line in solution:
         print(line)
-    print('Solved in {} seconds'.format(end - start))
-    """
+    print('Solved in {}s.'.format(end - start))
+"""
