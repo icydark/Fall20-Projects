@@ -4,19 +4,19 @@ Final project from the Fall 2020 semester
 Xinyu Huang - xinyuh10
 
 ## Introduction
-*Range* is a puzzle game from *Simon Tatham's Portable Puzzle Collection*. 
-The game is published on: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/range.html
+*Range* is a puzzle game from *Simon Tatham's Portable Puzzle Collection*.\n
+The game is published on: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/range.html\n
 
-Credit for this puzzle goes to Nikoli, who created this puzzle and called it whether "Kurodoko" or "Kuromasu". 
-An overview of *Kuromasu*: https://en.wikipedia.org/wiki/Kuromasu
+Credit for this puzzle goes to Nikoli, who created this puzzle and called it whether "Kurodoko" or "Kuromasu". \n
+An overview of *Kuromasu*: https://en.wikipedia.org/wiki/Kuromasu\n
 
-The puzzle board is a rectangular grid consists of white cells, numbered cells and hidden black cells.
+The puzzle board is a rectangular grid consists of white cells, numbered cells and hidden black cells.\n
 
-The puzzle has four basic rules:
-1. Each number on the board represents the number of white cells that can be seen from that cell in four directions (vertically and horizontally), including itself.
-2. No two black cells are orthogonally adjacent.
-3. No group of white cells is seperated by black cells.
-4. Numbered cells are white cells.
+The puzzle has four basic rules:\n
+1. Each number on the board represents the number of white cells that can be seen from that cell in four directions (vertically and horizontally), including itself.\n
+2. No two black cells are orthogonally adjacent.\n
+3. No group of white cells is seperated by black cells.\n
+4. Numbered cells are white cells.\n
 
 To solve the puzzle, players should guess the positions of the hidden black cells, or in other words, place the black cells in the right cells to make the board status conform all the rules above.
 
