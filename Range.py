@@ -8,7 +8,7 @@ from _collections import deque
 from copy import deepcopy
 
 
-# pycosat package can only run with python 3.7 interpreter under my local environment
+# under my local environment, pycosat package can only run with python 3.7 interpreter 
 
 
 class ClueCell:
