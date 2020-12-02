@@ -40,8 +40,10 @@ The steps of creating CNF clauses:
 It's difficult to translate rule 3 to a CNF clause. To verify this rule, the strategy is to collect possible solutions, then check the connectivity of white cells by a simplified Seed-Filling algorithm.  
 
 ## Big-O Complexity Analysis
-w - width of the game board     h - height of the game board  
-n - number of numbered cells    m - number on the numbered cell  
+w - width of the game board     
+h - height of the game board  
+n - number of numbered cells    
+m - number on the numbered cell  
 \*This analysis will not take mirrors into consider since the mirrors can make a sight path very long or very short.  
 
 #### For each numbered cell
