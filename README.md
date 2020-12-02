@@ -3,7 +3,7 @@ Final project from the Fall 2020 semester
 
 Xinyu Huang - xinyuh10  
 
-## Introduction
+### Introduction
 *Range* is a puzzle game from *Simon Tatham's Portable Puzzle Collection*.  
 The game is published on: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/range.html  
 
@@ -24,7 +24,7 @@ My variation: Mirror.
 Beside the numbered cells, there is another kind of "mirror" cell. In stead of going straightly, the sight will be reflected when meet a mirror. (like the mirror works in "Undead" puzzle from Simon Tatham's Portable Puzzle Collection)  
 The mirror cells are also counted as white cells.  
 
-## Programming Design & Logic
+### Programming Design & Logic
 Since the number of black cells is not explicitly provided, it is not effective to apply the backtrack strategy to search the right positions. An alternative way is to start from the exist conditions and use the deductive logic to infer the positions of the black cells. To implement this idea, this project applied Pycosat package. Each possible condition is translated to a CNF clause. The hidden cells can be found by solving the combination of all CNF clauses.  
 
 Two classes are included in the code: range board and numbered cells.  
@@ -39,7 +39,7 @@ The steps of creating CNF clauses:
 
 It's difficult to translate rule 3 to a CNF clause. To verify this rule, the strategy is to collect possible solutions, then check the connectivity of white cells by a simplified Seed-Filling algorithm.  
 
-## Big-O Complexity Analysis
+### Big-O Complexity Analysis
 w - width of the game board     
 h - height of the game board  
 n - number of numbered cells    
