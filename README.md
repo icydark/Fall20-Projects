@@ -59,8 +59,8 @@ Assign the general value (step 1): twice for each cell, 2\*w\*h => O(w\*h)
 Assign value to Numbered cells (step 2): O(n)  
 Possible permutations (step 3): assume each permutation is possible (worst condition), so it becomes the problem to split a number to the sum of four numbers. We can calculate it by looking at the partition problem: partition m balls in 4 groups. => (m\*m\*m)/(3\*2\*1) => O(m^3)
 Adjacent cells (step 4): O(w\*h)  
-from_dnf(): the length of DNF clause will be (O(m^3) ors) \* n ands, the complexity depends on how this function works, but this is why my program run very slow.  
-Check connectivity: Scan the game board twice: O(w*\h)  
+from_dnf(): the length of DNF clause will be (O(m^3) 'or's) \* n 'and's, the complexity depends on how this function works, but this is why my program run very slow.  
+Check connectivity: Scan the game board twice: O(w\*h)  
 
 So, to solve a puzzle, the complexity would be O(n\*(w\*h)^2 + O(from_dnf(m^3\*n groups)) + O(solve_all())), from the runtime coverage, it seems from_dnf() runs most of the time.  
 
