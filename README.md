@@ -15,7 +15,7 @@ The puzzle board is a rectangular grid consists of white cells, numbered cells a
 The puzzle has four basic rules:  
 1. Each number on the board represents the number of white cells that can be seen from that cell in four directions (vertically and horizontally), including itself.  
 2. No two black cells are orthogonally adjacent.  
-3. No group of white cells is seperated by black cells.  
+3. No group of white cells is separated by black cells.  
 4. Numbered cells are white cells.  
 
 To solve the puzzle, players should guess the positions of the hidden black cells, or in other words, place the black cells in the right cells to make the board status conform all the rules above.  
@@ -54,13 +54,13 @@ m - number on the numbered cell
 #### Read all clues
 -Each clue need a find permutation process: O(n\*(w\*h)^2)  
 
-#### CNF clauses and Check Connectivity
+#### CNF clauses and Connectivity
 -Assign the general value (step 1): twice for each cell, 2\*w\*h => O(w\*h)  
 -Assign value to Numbered cells (step 2): O(n)  
 -Possible permutations (step 3): assume each permutation is possible (worst condition), so it becomes the problem to split a number to the sum of four numbers. We can calculate it by looking at the partition problem: partition m balls in 4 groups. => (m\*m\*m)/(3\*2\*1) => O(m^3)
 -Adjacent cells (step 4): O(w\*h)  
 -from_dnf(): the length of DNF clause will be (O(m^3) 'or's) \* n 'and's, the complexity depends on how this function works, but this is why my program run very slow.  
--Check connectivity: Scan the game board twice: O(w\*h)  
+-Guarantee the connectivity: Scan the game board twice: O(w\*h)  
 
 So, to solve a puzzle, the complexity would be O(n\*(w\*h)^2 + O(from_dnf(m^3\*n groups)) + O(solve_all())), from the runtime coverage, it seems from_dnf() runs most of the time.  
 
